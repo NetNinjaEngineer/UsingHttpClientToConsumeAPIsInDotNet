@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Movies.API.Contexts;
 using Movies.API.Services;
+using Newtonsoft.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +13,11 @@ builder.Services.AddControllers(options =>
     options.InputFormatters.Add(new XmlSerializerInputFormatter(options));
 
 })
-    .AddNewtonsoftJson()
+    .AddNewtonsoftJson(setupAction =>
+    {
+        setupAction.SerializerSettings.ContractResolver =
+           new CamelCasePropertyNamesContractResolver();
+    })
     .ConfigureApiBehaviorOptions(setupAction =>
     {
         setupAction.SuppressModelStateInvalidFilter = true;
