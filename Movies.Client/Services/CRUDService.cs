@@ -22,7 +22,7 @@ namespace Movies.Client.Services
 
         public async Task Run()
         {
-            await CreateResource();
+            await UpdateResource();
         }
 
         private static async Task GetResource()
@@ -104,6 +104,37 @@ namespace Movies.Client.Services
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
+
+        }
+
+        private static async Task UpdateResource()
+        {
+            var movieToUpdate = new MovieForUpdate()
+            {
+                Title = "Pulp Fiction",
+                Description = "The movie with Zed.",
+                DirectorId = Guid.Parse("d28888e9-2ba9-473a-a40f-e38cb54f9b35"),
+                ReleaseDate = new DateTimeOffset(new DateTime(1992, 9, 2)),
+                Genre = "Crime, Drama"
+            };
+
+            var serializedMovieToUpdate = JsonSerializer.Serialize(movieToUpdate);
+
+            var request = new HttpRequestMessage(HttpMethod.Put,
+                "api/movies/5b1c2b4d-48c7-402a-80c3-cc796ad49c6b");
+
+            request.Content = new StringContent(serializedMovieToUpdate);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            var response = await _httpClient.SendAsync(request);
+
+            response.EnsureSuccessStatusCode();
+
+            var content = await request.Content.ReadAsStringAsync();
+
+            var updatedMovie = JsonSerializer.Deserialize<Movie>(content);
 
         }
     }
