@@ -14,5 +14,10 @@
         {
 
         }
+
+        private async Task GetResource()
+        {
+
+        }
     }
 }
