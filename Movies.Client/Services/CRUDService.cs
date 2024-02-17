@@ -181,5 +181,42 @@ namespace Movies.Client.Services
             });
 
         }
+
+        private static async Task PutResourceShortcut()
+        {
+            var movieToUpdate = new MovieForUpdate()
+            {
+                Title = "Pulp Fiction",
+                Description = "The movie with Zed.",
+                DirectorId = Guid.Parse("d28888e9-2ba9-473a-a40f-e38cb54f9b35"),
+                ReleaseDate = new DateTimeOffset(new DateTime(1992, 9, 2)),
+                Genre = "Crime, Drama"
+            };
+
+            var response = await _httpClient.PutAsync(
+               "api/movies/5b1c2b4d-48c7-402a-80c3-cc796ad49c6b",
+               new StringContent(
+                   JsonSerializer.Serialize(movieToUpdate),
+                   System.Text.Encoding.UTF8,
+                   "application/json"));
+
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+            var updatedMovie = JsonSerializer.Deserialize<Movie>(content,
+               new JsonSerializerOptions
+               {
+                   PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+               });
+        }
+
+        private static async Task DeleteResourceShortcut()
+        {
+            var response = await _httpClient.DeleteAsync(
+                "api/movies/5b1c2b4d-48c7-402a-80c3-cc796ad49c6b");
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+        }
     }
 }
