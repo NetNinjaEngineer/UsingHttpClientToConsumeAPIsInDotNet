@@ -16,7 +16,7 @@ namespace Movies.Client.Services
                 new MediaTypeWithQualityHeaderValue("application/json"));
 
             _httpClient.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/xml"));
+                new MediaTypeWithQualityHeaderValue("application/xml", 0.9));
 
         }
 
@@ -51,6 +51,25 @@ namespace Movies.Client.Services
             }
 
 
+
+        }
+
+        private static async Task GetResourceUsingHttpRequestMessage()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "api/Movies");
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            var response = await _httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            var movies = new List<Movie>();
+
+            if (response.Content.Headers.ContentType?.MediaType == "application/json")
+                movies = JsonSerializer.Deserialize<List<Movie>>(content);
+            else if (response.Content.Headers.ContentType?.MediaType == "application/xml")
+            {
+                var xmlSerializer = new XmlSerializer(typeof(List<Movie>));
+                movies = xmlSerializer.Deserialize(new StringReader(content)) as List<Movie>;
+            }
 
         }
     }
