@@ -1,4 +1,6 @@
-﻿namespace Movies.Client.Services
+﻿using System.Text.Json;
+
+namespace Movies.Client.Services
 {
     public class CRUDService : IIntegrationService
     {
@@ -12,11 +14,21 @@
 
         public async Task Run()
         {
-
+            await GetResource();
         }
 
-        private async Task GetResource()
+        private static async Task GetResource()
         {
+            var response = await _httpClient.GetAsync("api/Movies");
+
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            var movies = JsonSerializer.Deserialize<IEnumerable<Movie>>(content, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
 
         }
     }
