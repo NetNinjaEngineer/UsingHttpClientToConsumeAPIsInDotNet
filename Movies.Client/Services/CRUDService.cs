@@ -1,4 +1,5 @@
 ﻿using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using System.Xml.Serialization;
 
@@ -22,7 +23,7 @@ namespace Movies.Client.Services
 
         public async Task Run()
         {
-            await DeleteResource();
+            await PostResourceShortCut();
         }
 
         private static async Task GetResource()
@@ -147,6 +148,37 @@ namespace Movies.Client.Services
             response.EnsureSuccessStatusCode();
 
             var content = await response.Content.ReadAsStringAsync();
+
+        }
+
+        private static async Task PostResourceShortCut()
+        {
+            var movieToCreate = new MovieForCreation()
+            {
+                Title = "Reservoir Dogs",
+                Description = "After a simple jewelry heist goes terribly wrong, the " +
+               "surviving criminals begin to suspect that one of them is a police informant.",
+                DirectorId = Guid.Parse("d28888e9-2ba9-473a-a40f-e38cb54f9b35"),
+                ReleaseDate = new DateTimeOffset(new DateTime(1992, 9, 2)),
+                Genre = "Crime, Drama"
+            };
+
+            var serializedMovieToCreate = JsonSerializer.Serialize(movieToCreate);
+
+            var response = await _httpClient.PostAsync("api/Movies",
+                new StringContent(serializedMovieToCreate,
+                Encoding.UTF8,
+                new MediaTypeHeaderValue("application/json")
+            ));
+
+            response.EnsureSuccessStatusCode();
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            var movieCreated = JsonSerializer.Deserialize<Movie>(content, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
 
         }
     }
