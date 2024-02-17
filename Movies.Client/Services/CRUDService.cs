@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using System.Net.Http.Headers;
+using System.Text.Json;
+using System.Xml.Serialization;
 
 namespace Movies.Client.Services
 {
@@ -10,6 +12,12 @@ namespace Movies.Client.Services
         {
             _httpClient.BaseAddress = new Uri("https://localhost:7210");
             _httpClient.Timeout = new TimeSpan(0, 0, 30);
+            _httpClient.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/json"));
+
+            _httpClient.DefaultRequestHeaders.Accept.Add(
+                new MediaTypeWithQualityHeaderValue("application/xml"));
+
         }
 
         public async Task Run()
@@ -25,10 +33,24 @@ namespace Movies.Client.Services
 
             var content = await response.Content.ReadAsStringAsync();
 
-            var movies = JsonSerializer.Deserialize<IEnumerable<Movie>>(content, new JsonSerializerOptions
+            var movies = new List<Movie>();
+
+            if (response.Content.Headers.ContentType?.MediaType == "application/json")
             {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
+                movies = JsonSerializer.Deserialize<List<Movie>>(content, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+            }
+            else if (response.Content.Headers.ContentType?.MediaType == "application/xml")
+            {
+                var xmlSerializer = new XmlSerializer(typeof(List<Movie>));
+
+                movies = xmlSerializer.Deserialize(new StringReader(content)) as List<Movie>;
+
+            }
+
+
 
         }
     }
