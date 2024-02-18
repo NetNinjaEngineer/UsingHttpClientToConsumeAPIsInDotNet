@@ -49,7 +49,7 @@ namespace Movies.Client.Services
             var serializedChangeSet = JsonConvert.SerializeObject(patchDocument);
 
             var response = await _httpClient.PatchAsync("api/movies/6e87f657-f2c1-4d90-9b37-cbe43cc6adb9",
-                new StringContent(serializedChangeSet, Encoding.UTF8, new MediaTypeHeaderValue("application/json-patch+json"));
+                new StringContent(serializedChangeSet, Encoding.UTF8, new MediaTypeHeaderValue("application/json-patch+json")));
 
             response.EnsureSuccessStatusCode();
 

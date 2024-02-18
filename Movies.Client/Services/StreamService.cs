@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 
 namespace Movies.Client.Services
 {
@@ -9,7 +8,7 @@ namespace Movies.Client.Services
 
         public StreamService()
         {
-            _httpClient.BaseAddress = new Uri("");
+            _httpClient.BaseAddress = new Uri("https://localhost:7210");
             _httpClient.Timeout = new TimeSpan(0, 0, 30);
             _httpClient.DefaultRequestHeaders.Clear();
 
@@ -17,7 +16,8 @@ namespace Movies.Client.Services
 
         public async Task Run()
         {
-            await GetPosterWithStream();
+            //await GetPosterWithStream();
+            await GetPosterWithStreamAndCompletionMode();
         }
 
         private static async Task GetPosterWithStream()
@@ -30,12 +30,26 @@ namespace Movies.Client.Services
             var response = await _httpClient.SendAsync(request);
             response.EnsureSuccessStatusCode();
 
-            var stream = await response.Content.ReadAsStreamAsync();
+            using (var stream = await response.Content.ReadAsStreamAsync())
+            {
+                var poster = stream.ReadAndDeserializeFromJson<Poster>();
+            };
+        }
 
-            using var streamReader = new StreamReader(stream);
-            using var jsonTextReader = new JsonTextReader(streamReader);
-            var jsonSerializer = new JsonSerializer();
-            var poster = jsonSerializer.Deserialize<Poster>(jsonTextReader);
+        private static async Task GetPosterWithStreamAndCompletionMode()
+        {
+            var request = new HttpRequestMessage(
+                 HttpMethod.Get,
+                 $"api/movies/d8663e5e-7494-4f81-8739-6e0de1bea7ee/posters/{Guid.NewGuid()}");
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+
+            using (var stream = await response.Content.ReadAsStreamAsync())
+            {
+                var poster = stream.ReadAndDeserializeFromJson<Poster>();
+            };
 
         }
     }
