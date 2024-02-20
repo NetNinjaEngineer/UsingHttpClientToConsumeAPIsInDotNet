@@ -16,14 +16,34 @@ namespace Movies.Client.Services
 
         public async Task Run()
         {
-            await GetMoviesWithHttpClientFactory(_cancellationTokenSource.Token);
+            //await GetMoviesWithHttpClientFactory(_cancellationTokenSource.Token);
+            await GetMoviesWithNamedHttpClientFactory(_cancellationTokenSource.Token);
         }
 
         private async Task GetMoviesWithHttpClientFactory(CancellationToken cancellationToken)
         {
             var httpClient = _httpClientFactory.CreateClient();
+
             var request = new HttpRequestMessage(HttpMethod.Get,
-                "http://localhost:5137/api/Movies");
+                "https://localhost:7210/api/Movies");
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            using var response = await httpClient.SendAsync(request,
+                HttpCompletionOption.ResponseContentRead,
+                _cancellationTokenSource.Token);
+
+            response.EnsureSuccessStatusCode();
+            var responseContent = await response.Content.ReadAsStreamAsync();
+            var movies = responseContent.ReadAndDeserializeFromJson<List<Movie>>();
+
+        }
+
+        private async Task GetMoviesWithNamedHttpClientFactory(CancellationToken cancellationToken)
+        {
+            var httpClient = _httpClientFactory.CreateClient("MoviesClient");
+
+            var request = new HttpRequestMessage(HttpMethod.Get,
+                "api/Movies");
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             using var response = await httpClient.SendAsync(request,

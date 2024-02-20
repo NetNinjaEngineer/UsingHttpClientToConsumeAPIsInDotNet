@@ -40,7 +40,12 @@ class Program
         // add loggers           
         serviceCollection.AddLogging(configure => configure.AddDebug().AddConsole());
 
-        serviceCollection.AddHttpClient();
+        serviceCollection.AddHttpClient("MoviesClient", options =>
+        {
+            options.BaseAddress = new Uri("https://localhost:7210");
+            options.DefaultRequestHeaders.Clear();
+            options.Timeout = new TimeSpan(0, 0, 30);
+        });
 
         // register the integration service on our container with a 
         // scoped lifetime
