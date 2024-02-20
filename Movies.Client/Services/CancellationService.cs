@@ -10,7 +10,7 @@ namespace Movies.Client.Services
             AutomaticDecompression = DecompressionMethods.GZip
         });
 
-        private readonly static CancellationTokenSource _cancellationTokenSource = new(); 
+        private readonly static CancellationTokenSource _cancellationTokenSource = new();
 
         public CancellationService()
         {
@@ -34,15 +34,22 @@ namespace Movies.Client.Services
 
             request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
 
-            using var response = await _httpClient.SendAsync(request,
+            try
+            {
+                using var response = await _httpClient.SendAsync(request,
                 HttpCompletionOption.ResponseHeadersRead,
                 cancellationToken);
-            
-            response.EnsureSuccessStatusCode();
 
-            var responseContentAsStream = await response.Content.ReadAsStreamAsync();
+                response.EnsureSuccessStatusCode();
 
-            var trailer = responseContentAsStream.ReadAndDeserializeFromJson<Trailer>();
+                var responseContentAsStream = await response.Content.ReadAsStreamAsync();
+
+                var trailer = responseContentAsStream.ReadAndDeserializeFromJson<Trailer>();
+            }
+            catch (OperationCanceledException ex)
+            {
+                Console.WriteLine($"The operation was cancelled with message: {ex.Message}");
+            }
 
         }
     }
