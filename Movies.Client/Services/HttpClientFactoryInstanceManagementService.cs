@@ -23,7 +23,8 @@ namespace Movies.Client.Services
         {
             //await GetMoviesWithHttpClientFactory(_cancellationTokenSource.Token);
             //await GetMoviesWithNamedHttpClientFactory(_cancellationTokenSource.Token);
-            await GetMoviesWithTypedHttpClientFactory(_cancellationTokenSource.Token);
+            //await GetMoviesWithTypedHttpClientFactory(_cancellationTokenSource.Token);
+            await GetMoviesFromMoviesClient();
         }
 
         private async Task GetMoviesWithHttpClientFactory(CancellationToken cancellationToken)
@@ -63,21 +64,28 @@ namespace Movies.Client.Services
 
         }
 
-        private async Task GetMoviesWithTypedHttpClientFactory(CancellationToken cancellationToken)
+        // private async Task GetMoviesWithTypedHttpClientFactory(CancellationToken cancellationToken)
+        // {
+        //     var request = new HttpRequestMessage(HttpMethod.Get,
+        //         "api/Movies");
+        //     request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        //     request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+        //     using var response = await _movieClient.Client.SendAsync(request,
+        //         HttpCompletionOption.ResponseContentRead,
+        //         _cancellationTokenSource.Token);
+
+        //     response.EnsureSuccessStatusCode();
+        //     var responseContent = await response.Content.ReadAsStreamAsync();
+        //     var movies = responseContent.ReadAndDeserializeFromJson<List<Movie>>();
+
+        // }
+
+        public async Task GetMoviesFromMoviesClient()
         {
-            var request = new HttpRequestMessage(HttpMethod.Get,
-                "api/Movies");
-            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-            using var response = await _movieClient.Client.SendAsync(request,
-                HttpCompletionOption.ResponseContentRead,
-                _cancellationTokenSource.Token);
-
-            response.EnsureSuccessStatusCode();
-            var responseContent = await response.Content.ReadAsStreamAsync();
-            var movies = responseContent.ReadAndDeserializeFromJson<List<Movie>>();
-
+            var movies = await _movieClient.GetMoviesAsync(_cancellationTokenSource.Token);
         }
+
+
     }
 }
