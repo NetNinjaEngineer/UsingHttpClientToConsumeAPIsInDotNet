@@ -7,11 +7,14 @@ namespace Movies.Client.Services
 {
     public class StreamService : IIntegrationService
     {
-        private readonly static HttpClient _httpClient = new();
+        private readonly static HttpClient _httpClient = new(new HttpClientHandler
+        {
+            AutomaticDecompression = System.Net.DecompressionMethods.GZip
+        });
 
         public StreamService()
         {
-            _httpClient.BaseAddress = new Uri("https://localhost:7210");
+            _httpClient.BaseAddress = new Uri("http://localhost:5137");
             _httpClient.Timeout = new TimeSpan(0, 0, 30);
             _httpClient.DefaultRequestHeaders.Clear();
 
@@ -25,14 +28,17 @@ namespace Movies.Client.Services
             //await TestGetPosterWithStream();
             //await TestGetPosterWithStreamAndCompletionMode();
             //await PostPosterWithStream();
-            await PostAndReadPosterWithStreams();
+            //await PostAndReadPosterWithStreams();
+            // await TestPostPosterWithoutStream();
+            // await TestPostPosterWithStream();
+            await GetPosterWithGzipCompression();
         }
 
         private static async Task GetPosterWithStream()
         {
             var request = new HttpRequestMessage(
-                 HttpMethod.Get,
-                 $"api/movies/d8663e5e-7494-4f81-8739-6e0de1bea7ee/posters/{Guid.NewGuid()}");
+                HttpMethod.Get,
+                $"api/movies/d8663e5e-7494-4f81-8739-6e0de1bea7ee/posters/{Guid.NewGuid()}");
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             var response = await _httpClient.SendAsync(request);
@@ -47,8 +53,8 @@ namespace Movies.Client.Services
         private static async Task GetPosterWithStreamAndCompletionMode()
         {
             var request = new HttpRequestMessage(
-                 HttpMethod.Get,
-                 $"api/movies/d8663e5e-7494-4f81-8739-6e0de1bea7ee/posters/{Guid.NewGuid()}");
+                HttpMethod.Get,
+                $"api/movies/d8663e5e-7494-4f81-8739-6e0de1bea7ee/posters/{Guid.NewGuid()}");
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
@@ -253,5 +259,24 @@ namespace Movies.Client.Services
                 $"{stopWatch.ElapsedMilliseconds / 200} elapsedMilliseconds/request");
 
         }
+
+        private static async Task GetPosterWithGzipCompression()
+        {
+            var request = new HttpRequestMessage(
+                HttpMethod.Get,
+                $"api/movies/d8663e5e-7494-4f81-8739-6e0de1bea7ee/posters/{Guid.NewGuid()}");
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
+
+            var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+
+            using (var stream = await response.Content.ReadAsStreamAsync())
+            {
+                var poster = stream.ReadAndDeserializeFromJson<Poster>();
+            };
+
+        }
+
     }
 }
