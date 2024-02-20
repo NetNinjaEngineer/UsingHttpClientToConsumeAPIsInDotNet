@@ -45,6 +45,7 @@ namespace Movies.Client.Services
             var request = new HttpRequestMessage(HttpMethod.Get,
                 "api/Movies");
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             using var response = await httpClient.SendAsync(request,
                 HttpCompletionOption.ResponseContentRead,

@@ -45,7 +45,11 @@ class Program
             options.BaseAddress = new Uri("https://localhost:7210");
             options.DefaultRequestHeaders.Clear();
             options.Timeout = new TimeSpan(0, 0, 30);
-        });
+        }).ConfigurePrimaryHttpMessageHandler(configureHandler =>
+            new HttpClientHandler
+            {
+                AutomaticDecompression = System.Net.DecompressionMethods.GZip
+            });
 
         // register the integration service on our container with a 
         // scoped lifetime
