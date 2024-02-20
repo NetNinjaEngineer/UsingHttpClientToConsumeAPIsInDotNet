@@ -26,7 +26,9 @@ namespace Movies.Client.Services
                 "http://localhost:5137/api/Movies");
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-            using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseContentRead);
+            using var response = await httpClient.SendAsync(request,
+                HttpCompletionOption.ResponseContentRead,
+                _cancellationTokenSource.Token);
 
             response.EnsureSuccessStatusCode();
             var responseContent = await response.Content.ReadAsStreamAsync();
