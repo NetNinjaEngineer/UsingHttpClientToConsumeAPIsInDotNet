@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Diagnostics;
 using System.Net.Http.Headers;
+using System.Text;
 
 namespace Movies.Client.Services
 {
@@ -187,6 +188,69 @@ namespace Movies.Client.Services
             Stream content = await responseMessage.Content.ReadAsStreamAsync();
             var createdPoster = content.ReadAndDeserializeFromJson<Poster>();
 
+
+        }
+
+        private static async Task PostPosterWithoutStream()
+        {
+            var random = new Random();
+            var generatedBytes = new byte[524288];
+            random.NextBytes(generatedBytes);
+
+            var posterForCreation = new PosterForCreation
+            {
+                Name = "a new poster for creation",
+                Bytes = generatedBytes
+            };
+
+            using var requestMessage = new HttpRequestMessage(HttpMethod.Post,
+                "api/movies/d8663e5e-7494-4f81-8739-6e0de1bea7ee/posters");
+            requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+
+            var serializedPoster = System.Text.Json.JsonSerializer.Serialize(posterForCreation);
+
+            requestMessage.Content = new StringContent(serializedPoster, Encoding.UTF8);
+
+            requestMessage.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+            var responseMessage = await _httpClient.SendAsync(requestMessage);
+
+            var createdPoster = System.Text.Json.JsonSerializer.Deserialize<Poster>(
+                await responseMessage.Content.ReadAsStringAsync());
+
+        }
+
+        private static async Task TestPostPosterWithoutStream()
+        {
+            await PostPosterWithoutStream();
+
+            var stopWatch = Stopwatch.StartNew();
+
+            for (int i = 0; i < 200; i++)
+                await PostPosterWithoutStream();
+
+            stopWatch.Stop();
+
+            await Console.Out.WriteLineAsync($"EllapsedMilliseconds without stream:  " +
+                $"{stopWatch.ElapsedMilliseconds}, averaging = " +
+                $"{stopWatch.ElapsedMilliseconds / 200} elapsedMilliseconds/request");
+
+        }
+
+        private static async Task TestPostPosterWithStream()
+        {
+            await PostPosterWithStream();
+
+            var stopWatch = Stopwatch.StartNew();
+
+            for (int i = 0; i < 200; i++)
+                await PostPosterWithStream();
+
+            stopWatch.Stop();
+
+            await Console.Out.WriteLineAsync($"EllapsedMilliseconds with stream and completionMode:  " +
+                $"{stopWatch.ElapsedMilliseconds}, averaging = " +
+                $"{stopWatch.ElapsedMilliseconds / 200} elapsedMilliseconds/request");
 
         }
     }
