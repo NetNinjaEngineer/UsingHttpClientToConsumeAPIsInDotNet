@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Net;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Movies.Client.Services;
@@ -45,10 +46,13 @@ class Program
             options.BaseAddress = new Uri("https://localhost:7210");
             options.DefaultRequestHeaders.Clear();
             options.Timeout = new TimeSpan(0, 0, 30);
-        }).ConfigurePrimaryHttpMessageHandler(configureHandler =>
+        })
+            .AddHttpMessageHandler(configureHandler =>
+                new RetryPolicyDelegatingHandler(2))
+            .ConfigurePrimaryHttpMessageHandler(configureHandler =>
             new HttpClientHandler
             {
-                AutomaticDecompression = System.Net.DecompressionMethods.GZip
+                AutomaticDecompression = DecompressionMethods.GZip
             });
 
         // serviceCollection.AddHttpClient<MovieClient>(options =>
@@ -69,7 +73,7 @@ class Program
             .ConfigurePrimaryHttpMessageHandler(configureHandler =>
                 new HttpClientHandler
                 {
-                    AutomaticDecompression = System.Net.DecompressionMethods.GZip
+                    AutomaticDecompression = DecompressionMethods.GZip
                 });
 
         // register the integration service on our container with a 
