@@ -64,6 +64,8 @@ class Program
         //     });
 
         serviceCollection.AddHttpClient<MovieClient>()
+            .AddHttpMessageHandler(configureHandler =>
+                new RetryPolicyDelegatingHandler(2))
             .ConfigurePrimaryHttpMessageHandler(configureHandler =>
                 new HttpClientHandler
                 {
@@ -89,9 +91,9 @@ class Program
         //serviceCollection.AddScoped<IIntegrationService, HttpClientFactoryInstanceManagementService>();
 
         // For the dealing with errors and faults demos
-        serviceCollection.AddScoped<IIntegrationService, DealingWithErrorsAndFaultsService>();
+        //serviceCollection.AddScoped<IIntegrationService, DealingWithErrorsAndFaultsService>();
 
         // For the custom http handlers demos
-        //serviceCollection.AddScoped<IIntegrationService, HttpHandlersService>();
+        serviceCollection.AddScoped<IIntegrationService, HttpHandlersService>();
     }
 }
