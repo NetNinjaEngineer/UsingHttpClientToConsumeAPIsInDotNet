@@ -48,6 +48,8 @@ class Program
             options.Timeout = new TimeSpan(0, 0, 30);
         })
             .AddHttpMessageHandler(configureHandler =>
+                new TimeOutDelegatingHandler(TimeSpan.FromSeconds(20)))
+            .AddHttpMessageHandler(configureHandler =>
                 new RetryPolicyDelegatingHandler(2))
             .ConfigurePrimaryHttpMessageHandler(configureHandler =>
             new HttpClientHandler
