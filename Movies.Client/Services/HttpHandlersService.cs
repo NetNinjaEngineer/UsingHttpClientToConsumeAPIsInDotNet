@@ -13,8 +13,6 @@ namespace Movies.Client.Services
             cancellationTokenSource = new CancellationTokenSource();
         }
 
-
-
         public async Task Run()
         {
             await GetMoviesWithRetryPolicy(cancellationTokenSource.Token);

@@ -16,7 +16,7 @@ builder.Services.AddControllers(options =>
     .AddNewtonsoftJson(setupAction =>
     {
         setupAction.SerializerSettings.ContractResolver =
-           new CamelCasePropertyNamesContractResolver();
+        new CamelCasePropertyNamesContractResolver();
     })
     .ConfigureApiBehaviorOptions(setupAction =>
     {
@@ -33,6 +33,7 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddScoped<IMoviesRepository, MoviesRepository>();
 builder.Services.AddScoped<ITrailersRepository, TrailersRepository>();
 builder.Services.AddScoped<IPostersRepository, PostersRepository>();
+builder.Services.AddCors();
 
 var app = builder.Build();
 
@@ -41,6 +42,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors(x => x.AllowAnyHeader().AllowAnyOrigin().AllowAnyMethod());
 
 app.UseHttpsRedirection();
 
